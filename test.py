@@ -9,7 +9,7 @@ if __name__ == "__main__":
 
         # 创建一个消息对象
         agent_message = AgentMessage.from_dict({
-            'content': "你能够分析一下当前的项目的代码结构，并挑选一个代码文件进行分析吗？"
+            'content': "帮我联网搜索搜索一下美国最近发生过什么事"
         })
 
         response = await agent.invoke(agent_message, debug=True)

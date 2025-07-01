@@ -1,7 +1,7 @@
 from core.agent import BaseAgent
 from core.agent_message import AgentMessage
 from core.tool import ToolRegistry, ToolBase
-from tools import DateTool, FileTool
+from tools import DateTool, FileTool, WebBrowserTool, ProjectTool
 
 from typing import Dict, Any
 
@@ -18,6 +18,8 @@ class TestAgent(BaseAgent):
 
         self.tool_registry.register(DateTool())
         self.tool_registry.register(FileTool())
+        self.tool_registry.register(ProjectTool())
+        self.tool_registry.register(WebBrowserTool())
 
     def _build_messages(self, message: AgentMessage) -> Dict[str, Any]:
         system_prompt = "你是一个测试智能体，请你尽可能的满足用户的请求，请确保提供准确的结果和反馈。"
