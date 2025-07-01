@@ -8,8 +8,8 @@ class EchoAgent(BaseAgent):
         super().__init__(
             name="EchoAgent",
             description="一个回声智能体，负责重复用户的输入内容。",
-            provider="deepseek",
-            model="deepseek-chat",
+            provider="zhipu",
+            model="glm-4v-flash",
             temperature=0.0,
             max_tokens=4096
         )

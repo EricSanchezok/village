@@ -30,13 +30,12 @@ class Config(BaseSettings):
     log_level: str = Field("INFO", env="LOG_LEVEL")
     max_history_size: int = Field(1000, env="MAX_HISTORY_SIZE")
     default_timeout: int = Field(30, env="DEFAULT_TIMEOUT")
-    enable_a2a_server: bool = Field(True, env="ENABLE_A2A_SERVER")
-    a2a_server_port: int = Field(8000, env="A2A_SERVER_PORT")
+    browser_use_cloud_sync: bool = Field(False, env="BROWSER_USE_CLOUD_SYNC")
     
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
-
+        
 
 def load_config() -> Config:
     """加载配置"""

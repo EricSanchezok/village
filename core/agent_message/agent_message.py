@@ -42,7 +42,7 @@ class AgentMessage:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "Message":
+    def from_dict(cls, data: Dict[str, Any]) -> "AgentMessage":
         """从字典还原消息"""
         msg = cls(
             sender=data.get("sender", "user"), 
@@ -55,3 +55,6 @@ class AgentMessage:
         msg.message_id = data.get("message_id", str(uuid4()))
         msg.timestamp = data.get("timestamp", datetime.now().isoformat())
         return msg
+    
+    def __str__(self):
+        return f"{self.sender} 对 {self.receiver} 说：{self.content}"
