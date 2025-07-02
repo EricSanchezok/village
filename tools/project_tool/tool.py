@@ -7,102 +7,54 @@ from core.tool import ToolBase
 
 class ProjectTool(ToolBase):
     """
-    高级项目理解工具，专为智能体优化自我代码而设计
+    用于分析和理解本项目代码的工具。
     """
-    
     def __init__(self):
         parameters = {
             "operation": (
                 str,
-                "必须指定的操作类型。每个操作的核心用途:\n"
-                "▼ get_project_structure: 生成项目目录树结构图\n"
-                "  - 用途：理解项目整体架构，可视化文件组织\n"
-                "  - 输出：树状结构 + 相对路径\n"
-                "▼ get_code_structure: 提取代码关键结构信息\n"
-                "  - 用途：分析类/函数/依赖关系等架构元素\n"
-                "  - 输出：类名、函数签名、导入关系\n"
-                "▼ get_dependencies: 识别项目依赖库\n"
-                "  - 用途：了解项目依赖环境及版本\n"
-                "  - 支持：Python/JS/Java等主要生态\n"
-                "▼ search_code: 在项目中搜索特定代码模式\n"
-                "  - 用途：查找特定代码模式或关键字\n"
-                "  - 特性：支持多语言+跨文件搜索"
+                "指定要执行的操作。可用选项: "
+                "'get_project_structure', "
+                "'get_code_structure', "
+                "'get_dependencies', "
+                "'search_code'."
             ),
             "project_path": (
                 Optional[str],
-                "项目根目录路径（可选）\n"
-                "▼ 使用说明:\n"
-                "- 默认：使用工具内置项目根目录\n"
-                "- 相对路径：基于当前工作目录\n"
-                "- 绝对路径：完整系统路径\n"
-                "▼ 示例：\n"
-                "'src'  # 相对路径\n"
-                "'/home/user/project'  # 绝对路径"
+                "项目根目录的路径。如果为 null，则使用默认的项目根目录。"
             ),
             "search_pattern": (
                 Optional[str],
-                "搜索关键词或正则表达式（仅用于search_code操作）\n"
-                "▼ 特性:\n"
-                "- 支持简单字符串匹配\n"
-                "- 支持正则表达式（高级搜索）\n"
-                "- 跨多种文件类型同时搜索\n"
-                "▼ 示例：\n"
-                "'def create_'  # 搜索函数定义\n"
-                "'\\b[A-Z][a-z]+\\b'  # 搜索大写开头的单词"
+                "用于 'search_code' 操作的搜索关键词或正则表达式。"
             ),
             "file_types": (
                 Optional[List[str]],
-                "文件扩展名过滤器（列表格式）\n"
-                "▼ 使用场景:\n"
-                "- get_code_structure：指定分析哪些语言文件\n"
-                "- search_code：指定在哪些文件类型中搜索\n"
-                "▼ 默认行为：分析所有常见代码文件（.py/.js/.java等）\n"
-                "▼ 格式要求:\n"
-                "- 使用'.'前缀的扩展名列表\n"
-                "- 不区分大小写\n"
-                "▼ 示例：\n"
-                "['.py', '.ipynb']  # Python文件\n"
-                "['.js', '.ts']  # JavaScript/TypeScript文件"
+                "要包含的文件扩展名列表 (例如: ['.py', '.js'])。适用于 'get_code_structure' 和 'search_code' 操作。"
             ),
             "ignore_patterns": (
                 Optional[List[str]],
-                "排除目录/文件过滤器（列表格式）\n"
-                "▼ 内置默认值:\n"
-                "['__pycache__', '.git', '.idea', 'node_modules', 'dist', 'venv']\n"
-                "▼ 使用建议:\n"
-                "- 追加自定义忽略规则\n"
-                "- 不会覆盖默认规则\n"
-                "▼ 示例：\n"
-                "['tmp', 'logs']  # 排除临时和日志目录\n"
-                "['*.bak', '*.tmp']  # 排除临时文件"
+                "要忽略的目录或文件模式列表。此列表会附加到默认的忽略规则之后 (例如: '.git', 'node_modules')。"
             )
         }
+        
         super().__init__(
             name="project_operation",
             description=(
-                "高级项目理解工具，专为智能体优化自我代码而设计。"
-                "▼ 核心能力:\n"
-                "■ 架构洞察：可视化项目结构，理解模块关系\n"
-                "■ 代码智能：提取类/函数/变量等架构元素\n"
-                "■ 依赖追踪：识别项目依赖及版本\n"
-                "■ 代码搜索：跨文件查找特定代码模式\n"
-                "▼ 安全特性:\n"
-                "- 所有路径基于项目根目录（防止越权访问）\n"
-                "- 自动过滤敏感文件和目录\n"
-                "▼ 智能优化:\n"
-                "- 多语言支持（Python/JS/Java等）\n"
-                "- 依赖生态识别（requirements.txt/package.json/pom.xml等）"
+                "提供对本项目源代码的静态分析功能。此工具可以：\n"
+                "1. `get_project_structure`: 生成项目的文件和目录结构树。\n"
+                "2. `get_code_structure`: 从源代码中提取关键实体，如类、函数和导入。\n"
+                "3. `get_dependencies`: 从常见的依赖文件 (如 requirements.txt, package.json) 中解析项目依赖。\n"
+                "4. `search_code`: 在指定的代码文件中搜索文本或正则表达式模式。"
             ),
             parameters=parameters
         )
-        
-        # 设置项目根目录
+
         self.project_root = Path(__file__).parent.parent.parent
-        # 默认忽略的目录和文件
         self.default_ignore = [
             '__pycache__', '.git', '.idea', 'node_modules', 
-            'dist', 'build', 'venv', 'env', '.vscode'
+            'dist', 'build', 'venv', '.vscode'
         ]
+
     
     async def run(
         self, 

@@ -52,11 +52,13 @@ class BaseAgent(abc.ABC):
         **kwargs
     ) -> Dict[str, Any]:
         """获取LLM的完整响应（不包含工具调用处理）"""
+        tools = self.tool_registry.get_tool_schemas()
+        if tools:
+            kwargs["tools"] = tools
         return await self.api_adapter.chat_completion(
             messages=messages,
             temperature=self.temperature,
             max_tokens=self.max_tokens,
-            tools=self.tool_registry.get_tool_schemas(),
             **kwargs
         )
     

@@ -5,11 +5,11 @@ if __name__ == "__main__":
     import asyncio
     
     async def main():
-        agent = EchoAgent()
+        agent = TestAgent()
 
         # 创建一个消息对象
         agent_message = AgentMessage.from_dict({
-            'content': "本我深度调研一下强生公司在心脏内超声动态三维重建方面做到什么程度了。”"
+            'content': "请查找当前系统时间"
         })
 
         response = await agent.invoke(agent_message, debug=True)

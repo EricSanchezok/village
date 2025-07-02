@@ -9,6 +9,7 @@ class AgentMessage:
         sender: str,
         receiver: str,
         content: Union[str, Dict, List],
+        next_receiver: str = None,
         task_id: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None
     ):
@@ -23,6 +24,7 @@ class AgentMessage:
         """
         self.sender = sender
         self.receiver = receiver
+        self.next_receiver = next_receiver
         self.content = content
         self.task_id = task_id
         self.metadata = metadata or {}
@@ -35,6 +37,7 @@ class AgentMessage:
             "message_id": self.message_id,
             "sender": self.sender,
             "receiver": self.receiver,
+            "next_receiver": self.next_receiver,
             "content": self.content,
             "task_id": self.task_id,
             "metadata": self.metadata,

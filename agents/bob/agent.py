@@ -1,7 +1,7 @@
 from core.agent import BaseAgent
 from core.agent_message import AgentMessage
 from core.tool import ToolRegistry, ToolBase
-from tools import DateTool, FileTool, WebBrowserTool, ProjectTool
+from tools import FileTool, ProjectTool
 from browser_use import Agent, BrowserProfile, BrowserSession
 from .chat_deepseek import ChatDeepSeek
 import os
@@ -14,11 +14,16 @@ import shutil
 
 config = load_config()
 
-class BrowserAgent(BaseAgent):
+class Bob(BaseAgent):
     def __init__(self):
         super().__init__(
-            name="BrowserAgent",
-            description="一个可以使用浏览器进行联网搜索的智能体",
+            name="Bob",
+            description=f"""
+            我是Bob！我对村子外面的世界最好奇，脚程也最快。
+            村里要是遇到什么难题，比如某个工具的用法搞不明白了，或者想知道别的地方是怎么解决类似问题的，尽管交给我。
+            我能顺着信息的高速路（互联网）跑出去，帮你打听消息、查阅各种文献和资料，然后把最有用的情报带回来。
+            需要任何来自村外的信息，我就是你的眼睛和耳朵。
+            """,
             provider="deepseek",
             model="deepseek-reasoner",
             temperature=0.0,
@@ -28,7 +33,7 @@ class BrowserAgent(BaseAgent):
         self.project_root = Path(__file__).parent.parent.parent
         self.base_dir = self.project_root / ".data"
 
-        # shutil.rmtree(self.base_dir, ignore_errors=True)
+        shutil.rmtree(self.base_dir, ignore_errors=True)
 
         self.downloads_path = self.base_dir / "downloads"
         self.downloads_path.mkdir(parents=True, exist_ok=True)
@@ -39,7 +44,11 @@ class BrowserAgent(BaseAgent):
         self.user_data_path = self.base_dir / "user_data"
         self.user_data_path.mkdir(parents=True, exist_ok=True)
 
+        self.save_conversation_path = self.base_dir / f"{self.name}_internal_conversation"
+        self.save_conversation_path.mkdir(parents=True, exist_ok=True)
+
         self.result_path = self.file_system_path / "browseruse_agent_data" / "results.md"
+        self.result_path.parent.mkdir(parents=True, exist_ok=True)
         self.result_path.touch(exist_ok=True)
 
     def _build_messages(self, message: AgentMessage, agent_history: AgentHistoryList) -> Dict[str, Any]:
@@ -76,7 +85,7 @@ class BrowserAgent(BaseAgent):
             downloads_path=str(self.downloads_path),
             channel="chromium",
             chromium_sandbox=True,
-            headless=False,
+            headless=True,
             ignore_default_args=["--disable-extensions"],
         )
         browser_session = BrowserSession(
@@ -85,18 +94,15 @@ class BrowserAgent(BaseAgent):
 
         agent = Agent(
             file_system_path=str(self.file_system_path),
+            use_vision=False,
             browser_session=browser_session,
             task=agent_message.content,
             llm=ChatDeepSeek(
-                model="glm-4v-flash",
-                base_url=config.zhipu_base_url,
-                api_key=config.zhipu_api_key
-                ),
-            planner_llm=ChatDeepSeek(
-                model="deepseek-reasoner",
+                model="deepseek-chat",
                 base_url=config.deepseek_base_url,
                 api_key=config.deepseek_api_key
-            )
+                ),
+            save_conversation_path = str(self.save_conversation_path)
         )
 
         agent_history = await agent.run()

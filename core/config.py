@@ -25,6 +25,10 @@ class Config(BaseSettings):
     
     # Anthropic配置
     anthropic_api_key: Optional[str] = Field(None, env="ANTHROPIC_API_KEY")
+
+    # 硅基流动配置
+    siliconflow_api_key: Optional[str] = Field(None, env="SILICONFLOW_API_KEY")
+    siliconflow_base_url: str = Field("https://api.siliconflow.cn/v1", env="SILICONFLOW_BASE_URL")
     
     # 系统配置
     log_level: str = Field("INFO", env="LOG_LEVEL")
@@ -74,6 +78,12 @@ def get_api_config(provider: str) -> Dict[str, Any]:
     elif provider.lower() == "anthropic":
         return {
             "api_key": config.anthropic_api_key,
+            "timeout": config.default_timeout
+        }
+    elif provider.lower() == "siliconflow":
+        return {
+            "api_key": config.siliconflow_api_key,
+            "base_url": config.siliconflow_base_url,
             "timeout": config.default_timeout
         }
     else:
