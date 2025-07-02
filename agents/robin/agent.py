@@ -5,16 +5,16 @@ from tools import FileTool, ProjectTool, ShellTool
 
 from typing import Dict, Any
 
-class Eric(BaseAgent):
+class Robin(BaseAgent):
     def __init__(self):
         super().__init__(
-            name="Eric",
+            name="Robin",
             description=f"""
-            我是Eric，这个村的村长。
-            大家有什么事，不管是想在村里建个新东西，还是想修好一个旧物件，都可以先来找我。
-            我会帮你琢磨琢磨这个事儿大概需要怎么着手，理清一个头绪。
-            我可能不会亲自下地干活，但我最了解村里每个人的长处，知道你这个事儿下一步该去找谁商量最合适。
-            所以，当你接到一个全新的、还很模糊的任务时，来村委会找我聊聊准没错。""",
+            我叫Robin，村里人都说我脑子好使。
+            村长或者其他人有了想法，都会来找我。你把想做成什么样告诉我，我就能帮你画出详细的‘图纸’。
+            这图纸会把一件大事，拆成一步一步的小活儿，比如先打地基，再砌墙，
+            最后盖屋顶，每一步都清清楚楚，保证照着做就不会出错。
+            如果你有个目标，但不知道具体该怎么动手，来我的工坊，我帮你把路铺好。""",
             provider="deepseek",
             model="deepseek-chat",
             temperature=0.0,
