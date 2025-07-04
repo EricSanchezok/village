@@ -1,15 +1,15 @@
-from agents import EchoAgent, TestAgent, BrowserAgent
+from agents import EchoAgent, TestAgent, Bob
 from core.agent_message import AgentMessage
 
 if __name__ == "__main__":
     import asyncio
     
     async def main():
-        agent = TestAgent()
+        agent = Bob()
 
         # 创建一个消息对象
         agent_message = AgentMessage.from_dict({
-            'content': "请查找当前系统时间"
+            'content': "帮我对比一下GPT4o和DeepseekV3的价格"
         })
 
         response = await agent.invoke(agent_message, debug=True)

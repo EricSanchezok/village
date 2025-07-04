@@ -62,10 +62,10 @@ def setup_console_encoding():
     """设置控制台编码为UTF-8"""
     try:
         # 设置标准输出编码
-        if hasattr(sys.stdout, 'reconfigure'):
-            sys.stdout.reconfigure(encoding='utf-8', errors='replace')
-        if hasattr(sys.stderr, 'reconfigure'):
-            sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+        if getattr(sys.stdout, 'reconfigure', None):
+            sys.stdout.reconfigure(encoding='utf-8', errors='replace')  # type: ignore
+        if getattr(sys.stderr, 'reconfigure', None):
+            sys.stderr.reconfigure(encoding='utf-8', errors='replace')  # type: ignore
         
         # 设置环境变量
         os.environ.setdefault('PYTHONIOENCODING', 'utf-8')

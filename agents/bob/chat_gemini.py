@@ -1,16 +1,14 @@
-# ------------------ 新增或替换的引用 ------------------
 import google.generativeai as genai
 from google.api_core.exceptions import GoogleAPICallError, ResourceExhausted
 from google.generativeai.types import GenerationConfig, HarmCategory, HarmBlockThreshold
 from google.generativeai.generative_models import GenerativeModel, ChatSession
-# ----------------------------------------------------
 
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import Any, TypeVar, overload
 import json
 
-import httpx # 保留以支持原始接口定义，但不再直接使用
+import httpx
 from pydantic import BaseModel
 
 from browser_use.llm.base import BaseChatModel
@@ -19,12 +17,7 @@ from browser_use.llm.messages import BaseMessage, AIMessage, HumanMessage, Syste
 from browser_use.llm.schema import SchemaOptimizer
 from browser_use.llm.views import ChatInvokeCompletion, ChatInvokeUsage
 
-# 假设您的 Message Serializer 存在，但我们将在此处实现一个 Gemini 特定的转换逻辑
-# from browser_use.llm.openai.serializer import OpenAIMessageSerializer
-
-
 T = TypeVar('T', bound=BaseModel)
-
 
 @dataclass
 class ChatGemini(BaseChatModel):

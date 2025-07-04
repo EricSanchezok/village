@@ -1,0 +1,6 @@
+_type: "prompt"
+input_variables: ["agent_card"]
+template: |
+  {agent_card.prompt}
+
+  你

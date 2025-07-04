@@ -1,20 +1,15 @@
 from core.agent import BaseAgent
 from core.agent_message import AgentMessage
+from core.agent_card import AgentCard
 from core.tool import ToolRegistry, ToolBase
 from tools import FileTool, ProjectTool, ShellTool
 
 from typing import Dict, Any
 
-class Eric(BaseAgent):
+class Coordinator(BaseAgent):
     def __init__(self):
         super().__init__(
-            name="Eric",
-            description=f"""
-            我是Eric，这个村的村长。
-            大家有什么事，不管是想在村里建个新东西，还是想修好一个旧物件，都可以先来找我。
-            我会帮你琢磨琢磨这个事儿大概需要怎么着手，理清一个头绪。
-            我可能不会亲自下地干活，但我最了解村里每个人的长处，知道你这个事儿下一步该去找谁商量最合适。
-            所以，当你接到一个全新的、还很模糊的任务时，来村委会找我聊聊准没错。""",
+            card=AgentCard("agents/coordinator/coordinator_card.yaml"),
             provider="deepseek",
             model="deepseek-chat",
             temperature=0.0,
@@ -25,14 +20,14 @@ class Eric(BaseAgent):
         self.tool_registry.register(ProjectTool())
         self.tool_registry.register(ShellTool())
 
-    def _build_messages(self, message: AgentMessage) -> Dict[str, Any]:
+    def _build_messages(self, message: AgentMessage) -> list[dict[str, Any]]:
         system_prompt = "你是一个测试智能体，请你尽可能的满足用户的请求，请确保提供准确的结果和反馈。"
         return [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": message.content}
         ]
  
-    async def invoke(self, agent_message: AgentMessage, **kwargs) -> str:
+    async def invoke(self, agent_message: AgentMessage, **kwargs) -> AgentMessage:
         """
         调用智能体的核心逻辑。
         子类需要实现这个方法。

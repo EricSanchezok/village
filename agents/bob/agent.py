@@ -85,7 +85,7 @@ class Bob(BaseAgent):
             downloads_path=str(self.downloads_path),
             channel="chromium",
             chromium_sandbox=True,
-            headless=True,
+            headless=False,
             ignore_default_args=["--disable-extensions"],
         )
         browser_session = BrowserSession(

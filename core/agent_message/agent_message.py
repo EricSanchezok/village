@@ -9,7 +9,7 @@ class AgentMessage:
         sender: str,
         receiver: str,
         content: Union[str, Dict, List],
-        next_receiver: str = None,
+        next_receiver: Optional[str] = None,
         task_id: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None
     ):

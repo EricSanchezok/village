@@ -6,6 +6,8 @@ from typing import List, Dict, Optional, Any, Union, AsyncGenerator
 from ..llm_api import BaseAPIAdapter, create_api_adapter
 from ..tool import ToolBase, ToolRegistry
 from ..agent_message import AgentMessage
+from ..agent_card import AgentCard
+from ..utils.logger import get_logger
 
 class BaseAgent(abc.ABC):
     """
@@ -13,8 +15,7 @@ class BaseAgent(abc.ABC):
     """
     def __init__(
         self,
-        name: str,
-        description: str,
+        card: AgentCard,
         provider: str,
         model: str,
         tool_registry: ToolRegistry = ToolRegistry(),
@@ -22,20 +23,22 @@ class BaseAgent(abc.ABC):
         max_tokens: int = 4096,
         max_function_calls: int = 10,
     ):
-        self.name = name
-        self.description = description
+        self.logger = get_logger(f"agent.{card.name}")
+        self.card = card
         self.provider = provider
         self.model = model
         self.tool_registry = tool_registry
         self.temperature = temperature
         self.max_tokens = max_tokens
         self.max_function_calls = max_function_calls
-        
-        # 创建API适配器实例
-        self.api_adapter: BaseAPIAdapter = create_api_adapter(
-            provider=provider,
-            model=model
-        )
+
+        if self.provider and self.model:
+            self.api_adapter = create_api_adapter(
+                provider=provider,
+                model=model
+            )
+        else:
+            self.api_adapter = None
         
     @abc.abstractmethod
     async def invoke(
@@ -52,6 +55,8 @@ class BaseAgent(abc.ABC):
         **kwargs
     ) -> Dict[str, Any]:
         """获取LLM的完整响应（不包含工具调用处理）"""
+        if self.api_adapter is None:
+            raise ValueError("API adapter not initialized")
         tools = self.tool_registry.get_tool_schemas()
         if tools:
             kwargs["tools"] = tools
