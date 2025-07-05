@@ -1,12 +1,12 @@
 system_prompt:
   _type: prompt
-  input_variables: ["agent_card", "format_prompt"]
+  input_variables: ["agent_card", "routing_prompt"]
   template: |
     {agent_card.prompt}
     
     如果你认为当前任务已经完成，请指定下一个接收者是"user"。
 
-    {format_prompt}
+    {routing_prompt}
 
 user_prompt:
   _type: prompt

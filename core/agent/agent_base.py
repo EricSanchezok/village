@@ -3,6 +3,7 @@ import asyncio
 import json
 import os
 import inspect
+from tkinter import NO
 import yaml
 from typing import List, Dict, Optional, Any, Union, AsyncGenerator
 import re
@@ -25,7 +26,7 @@ class AgentBase(abc.ABC):
         card: Optional[AgentCard] = None,
         provider: str = "deepseek",
         model: str = "deepseek-chat",
-        tool_registry: ToolRegistry = ToolRegistry(),
+        tool_registry: Optional[ToolRegistry] = None,
         temperature: float = 0.7,
         max_tokens: int = 4096,
         max_function_calls: int = 10,
@@ -40,7 +41,7 @@ class AgentBase(abc.ABC):
         self.card = card
         self.provider = provider
         self.model = model
-        self.tool_registry = tool_registry
+        self.tool_registry = tool_registry if tool_registry is not None else ToolRegistry()
         self.temperature = temperature
         self.max_tokens = max_tokens
         self.max_function_calls = max_function_calls
@@ -156,38 +157,44 @@ class AgentBase(abc.ABC):
         )
 
     def _add_routing_instructions(self, agent_message: AgentMessage) -> str:
-        prompt = ""
         if self.task is None:
-            return prompt
-        if agent_message.next_receiver is None:
-            prompt += f"""
-{agent_message.sender}并没有指定下一个接收者是谁，
-{self.task.roster_prompt}
-请你在完成当前任务后根据已经获得的所有信息，确定你的消息发送给谁。如果你认为当前的任务已完成，请指定下一个接收者是"user"。
-"""
-        else:
-            prompt += f"""
-{agent_message.sender}已经指定下一个接收者是{agent_message.next_receiver}，
-请你在完成当前任务后输出的消息中指定下一个接收者。
-"""
+            return ""
+        
+        return f"""
+    你作为{self.card.name}，收到了来自{agent_message.sender}的消息。
 
-        prompt += f"""
-你同样也可以指定下下个接收者是谁，如果你需要指定则在输出的内容中填写"next_receiver"字段。
-如果你不需要指定下下个接收者，则将该字段留空。
-"""
+    # 你的任务
+    1. 处理当前消息内容
+    2. 生成回复并指定接收者(receiver)
+    3. 根据当前任务状态，决定是否继续流转或结束：
+    - 如果任务已完成，指定接收者为"user"
+    - 如果还需继续处理，从下列角色中选择合适接收者：
+    {self.task.roster_prompt}
 
-        prompt += f"""
-        # 输出格式要求
-        输出格式务必为JSON格式，不要添加任何其他内容。
+    # 回复内容编写要求
+    请基于以下规则撰写回复内容：
+    - 内容应是针对接收者(receiver)的完整指令或回复
+    - 使用接收者能理解的专业术语和表述风格
+    - 包含所有必要上下文信息
 
-        例如：
-        {{
-            "receiver": <下一个接收者的名称>,
-            "next_receiver": <下下一个接收者的名称>,
-            "content": <你的消息内容>
-        }}
-        """
-        return prompt
+    # 输出格式要求 (JSON格式)
+    必须严格使用以下JSON格式输出：
+
+    {{
+        "receiver": "<接收者名称>",
+        "content": "你的回复内容（针对接收者）"
+    }}
+
+    示例：
+    {{
+        "receiver": "数据工程师",
+        "content": "张工，我已处理完销售数据清洗工作。请基于附件中的清洗结果进行ETL流程，重点处理Q3异常值问题"
+    }}
+
+    重要提示：
+    - 接收者(receiver)字段必须明确指定
+    - 内容(content)应直接与接收者对话，无需二次解释
+    """
     
     async def _execute_tool_calls_loop(
         self, 

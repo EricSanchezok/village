@@ -65,10 +65,9 @@ class Task:
                 agent = self.get_agent(receiver)
                 if agent is None:
                     self.logger.error(f"Agent {receiver} not found")
-                    # 创建错误消息返回给用户
                     error_message = AgentMessage(
                         sender="system",
-                        receiver="user",
+                        receiver="Eric",
                         content=f"错误：找不到智能体 {receiver}",
                         task_id=self.task_id
                     )
@@ -88,7 +87,7 @@ class Task:
                     # 创建错误消息
                     error_message = AgentMessage(
                         sender="system",
-                        receiver="user",
+                        receiver="Eric",
                         content=f"智能体 {receiver} 处理消息时出错: {str(e)}",
                         task_id=self.task_id
                     )

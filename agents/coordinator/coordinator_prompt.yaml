@@ -1,10 +1,10 @@
 system_prompt:
   _type: prompt
-  input_variables: ["agent_card", "format_prompt"]
+  input_variables: ["agent_card", "routing_prompt"]
   template: |
     {agent_card.prompt}
     如果任务非常简单，你可以直接完成任务，不需要路由到其他Agent。
-    {format_prompt}
+    {routing_prompt}
 
 user_prompt:
   _type: prompt

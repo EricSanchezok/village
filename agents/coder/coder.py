@@ -4,7 +4,7 @@ from tools import ShellTool
 from typing import Dict, Any, List
 import json
 
-class Coordinator(AgentBase):
+class Coder(AgentBase):
     def __init__(self):
         super().__init__(
             provider="deepseek",

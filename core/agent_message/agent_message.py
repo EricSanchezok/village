@@ -9,7 +9,6 @@ class AgentMessage:
         content: Union[str, Dict, List],
         sender: Optional[str] = None,
         receiver: Optional[str] = None,
-        next_receiver: Optional[str] = None,
         task_id: Optional[str] = None,
         token_usage: Optional[int] = 0,
         metadata: Optional[Dict[str, Any]] = None
@@ -25,7 +24,6 @@ class AgentMessage:
         """
         self.sender = sender
         self.receiver = receiver
-        self.next_receiver = next_receiver
         self.content = content
         self.task_id = task_id
         self.token_usage = token_usage
@@ -39,7 +37,6 @@ class AgentMessage:
             "message_id": self.message_id,
             "sender": self.sender,
             "receiver": self.receiver,
-            "next_receiver": self.next_receiver,
             "content": self.content,
             "task_id": self.task_id,
             "metadata": self.metadata,
@@ -65,7 +62,6 @@ class AgentMessage:
         return f"""
 发送方：{self.sender}
 接收方：{self.receiver}
-下一接收方：{self.next_receiver}
 内容：{self.content}
 任务ID：{self.task_id}
 token消耗：{self.token_usage}
