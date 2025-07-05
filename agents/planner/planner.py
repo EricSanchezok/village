@@ -22,7 +22,8 @@ class Planner(AgentBase):
                 routing_prompt=self._add_routing_instructions(agent_message)
             )},
             {"role": "user", "content": self.user_prompt.format(
-                agent_message=agent_message
+                agent_message=agent_message,
+                message_history=self.task.get_message_history() if self.task is not None else ""
             )}
         ]
 

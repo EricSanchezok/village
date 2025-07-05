@@ -10,8 +10,11 @@ system_prompt:
 
 user_prompt:
   _type: prompt
-  input_variables: ["agent_message"]
+  input_variables: ["agent_message", "message_history"]
   template: |
+    整个任务的上下文信息:
+    {message_history}
+
     你收到了来自{agent_message.sender}的消息：
     {agent_message.content}
     

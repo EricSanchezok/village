@@ -17,6 +17,7 @@ class BaseAPIAdapter(ABC):
         self.model = model
         self.api_config = get_api_config(provider)
         self.logger = get_logger(f"api.{provider}")
+        self.task_id: Optional[str] = 'test'
     
     @abstractmethod
     async def chat_completion(

@@ -55,7 +55,8 @@ class BrowserOperator(AgentBase):
             {"role": "user", "content": self.user_prompt.format(
                 agent_message=agent_message,
                 agent_history=agent_history,
-                browser_result=self.result_path.read_text()
+                browser_result=self.result_path.read_text(),
+                message_history=self.task.get_message_history() if self.task is not None else ""
             )}
         ]
  

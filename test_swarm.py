@@ -11,7 +11,7 @@ if __name__ == "__main__":
     swarm.register_agent(BrowserOperator())
 
     async def main():
-        message = await swarm.invoke("帮我写一段python代码能够实现贪吃蛇游戏")
+        message = await swarm.invoke("请你分析一下你当前的项目结构，并且生成项目分析文档，并提出改进意见")
         print(message)
 
     asyncio.run(main())

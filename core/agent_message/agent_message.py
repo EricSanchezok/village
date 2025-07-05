@@ -69,3 +69,6 @@ token消耗：{self.token_usage}
 时间戳：{self.timestamp}
 消息ID：{self.message_id}
         """
+
+    def model_dump(self) -> Dict[str, Any]:
+        return self.to_dict()
