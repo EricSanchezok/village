@@ -5,6 +5,7 @@ import os
 import inspect
 import yaml
 from typing import List, Dict, Optional, Any, Union, AsyncGenerator
+import re
 
 from langchain.prompts import load_prompt
 
@@ -32,7 +33,9 @@ class AgentBase(abc.ABC):
         # 如果没有提供card，则自动查找
         if card is None:
             card = self._auto_find_card()
-        
+
+        self.task_id: Optional[str] = "test"
+        self.task: Optional["Task"] = None # type: ignore
         self.logger = get_logger(f"agent.{card.name}")
         self.card = card
         self.provider = provider
@@ -51,17 +54,20 @@ class AgentBase(abc.ABC):
             self.api_adapter = None
         
         # 自动加载提示词模板
-        self.prompt_template = self._auto_load_prompt_template()
-    
+        self.system_prompt, self.user_prompt = self._auto_load_prompt_template()
+
     def _auto_find_card(self) -> AgentCard:
         """
         自动根据类名查找对应的配置文件
         例如：Coordinator -> coordinator_card.yaml
+             BrowserOperator -> browser_operator_card.yaml
+        注意：这个方法中不能调用logger，因为还没初始化
         """
         # 获取当前类的名称
         class_name = self.__class__.__name__
-        # 转换为小写并添加后缀
-        card_filename = f"{class_name.lower()}_card.yaml"
+        # 驼峰命名转下划线命名
+        snake_case = re.sub(r'(?<!^)(?=[A-Z])', '_', class_name).lower()
+        card_filename = f"{snake_case}_card.yaml"
         
         # 获取当前文件所在的目录
         current_file = inspect.getfile(self.__class__)
@@ -71,56 +77,56 @@ class AgentBase(abc.ABC):
         card_path = os.path.join(current_dir, card_filename)
         
         if os.path.exists(card_path):
-            self.logger.info(f"自动找到配置文件: {card_path}")
             return AgentCard(card_path)
         else:
-            # 如果找不到配置文件，创建一个默认的
-            self.logger.warning(f"未找到配置文件: {card_path}，使用默认配置")
             raise FileNotFoundError(f"未找到配置文件: {card_path}")
     
     def _auto_load_prompt_template(self):
         """
-        自动根据类名查找并加载提示词模板
-        例如：Echoer -> echoer_prompt.yaml
+        自动加载包含system和user的双模板提示词
+        返回包含system_prompt_tmp和user_prompt_tmp的字典
         """
-        # 获取当前类的名称
         class_name = self.__class__.__name__
-        # 转换为小写并添加后缀
-        prompt_filename = f"{class_name.lower()}_prompt.yaml"
-        
-        # 获取当前文件所在的目录
-        current_file = inspect.getfile(self.__class__)
-        current_dir = os.path.dirname(current_file)
-        
-        # 在当前目录下查找提示词文件
+        snake_case = re.sub(r'(?<!^)(?=[A-Z])', '_', class_name).lower()
+        prompt_filename = f"{snake_case}_prompt.yaml"
+        current_dir = os.path.dirname(inspect.getfile(self.__class__))
         prompt_path = os.path.join(current_dir, prompt_filename)
         
-        if os.path.exists(prompt_path):
-            self.logger.info(f"自动找到提示词文件: {prompt_path}")
-            try:
-                return load_prompt(prompt_path)
-            except Exception as e:
-                self.logger.error(f"加载提示词模板失败: {e}")
-                raise FileNotFoundError(f"提示词文件格式错误: {prompt_path} - {e}")
-        else:
-            # 如果找不到提示词文件，报错
-            self.logger.error(f"未找到提示词文件: {prompt_path}")
-            raise FileNotFoundError(f"智能体必须要有系统提示词！未找到文件: {prompt_path}")
-    
-    def _build_messages(self, message: AgentMessage) -> List[Dict[str, Any]]:
-        """
-        构建消息列表，使用langchain提示词模板
-        """
-        # 使用提示词模板格式化
-        system_prompt = self.prompt_template.format(
-            agent_card=self.card,
-            agent_message=message
-        )
+        if not os.path.exists(prompt_path):
+            raise FileNotFoundError(f"智能体提示词文件缺失: {prompt_path}")
         
-        return [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": message.content}
-        ]
+        try:
+            # 使用load_prompt直接加载文件，它会自动处理LangChain格式
+            from langchain.prompts import load_prompt
+            
+            # 创建临时文件来分别加载system和user模板
+            import tempfile
+            
+            with open(prompt_path, 'r', encoding='utf-8') as f:
+                prompt_data = yaml.safe_load(f)
+            
+            # 分别创建system和user模板的临时文件
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as temp_system:
+                yaml.dump(prompt_data['system_prompt'], temp_system, default_flow_style=False, allow_unicode=True, encoding='utf-8')
+                temp_system_path = temp_system.name
+            
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False, encoding='utf-8') as temp_user:
+                yaml.dump(prompt_data['user_prompt'], temp_user, default_flow_style=False, allow_unicode=True, encoding='utf-8')
+                temp_user_path = temp_user.name
+            
+            try:
+                system_template = load_prompt(temp_system_path, encoding="utf-8")
+                user_template = load_prompt(temp_user_path, encoding="utf-8")
+                return system_template, user_template
+            finally:
+                # 清理临时文件
+                os.unlink(temp_system_path)
+                os.unlink(temp_user_path)
+            
+        except KeyError as e:
+            raise ValueError(f"提示词文件缺少必需字段: {e}")
+        except Exception as e:
+            raise RuntimeError(f"加载提示词失败: {str(e)}")
 
     @abc.abstractmethod
     async def invoke(
@@ -148,6 +154,40 @@ class AgentBase(abc.ABC):
             max_tokens=self.max_tokens,
             **kwargs
         )
+
+    def _format_prompt(self, agent_message: AgentMessage) -> str:
+        prompt = ""
+        if self.task is None:
+            return prompt
+        if agent_message.next_receiver is None:
+            prompt += f"""
+{agent_message.sender}并没有指定下一个接收者是谁，
+{self.task.roster_prompt}
+请你在完成当前任务后根据已经获得的所有信息，确定你的消息发送给谁。如果你认为当前的任务已完成，请指定下一个接收者是"user"。
+"""
+        else:
+            prompt += f"""
+{agent_message.sender}已经指定下一个接收者是{agent_message.next_receiver}，
+请你在完成当前任务后输出的消息中指定下一个接收者。
+"""
+
+        prompt += f"""
+你同样也可以指定下下个接收者是谁，如果你需要指定则在输出的内容中填写"next_receiver"字段。
+如果你不需要指定下下个接收者，则将该字段留空。
+"""
+
+        prompt += f"""
+        # 输出格式要求
+        输出格式务必为JSON格式，不要添加任何其他内容。
+
+        例如：
+        {{
+            "receiver": <下一个接收者的名称>,
+            "next_receiver": <下下一个接收者的名称>,
+            "content": <你的消息内容>
+        }}
+        """
+        return prompt
     
     async def process_with_tools(
         self, 
@@ -162,10 +202,10 @@ class AgentBase(abc.ABC):
         iteration = 0
         
         while iteration <= self.max_function_calls and response.get("tool_calls"):
-            tool_results = await self.handle_tool_calls(response["tool_calls"])
+            tool_results = await self._handle_tool_calls(response["tool_calls"])
             
             # 获取工具消息列表
-            tool_messages = self.build_tool_message(tool_results, response)
+            tool_messages = self._build_tool_message(tool_results, response)
             
             # 添加助手消息
             working_messages.append({
@@ -187,7 +227,7 @@ class AgentBase(abc.ABC):
             }
         return response
     
-    async def handle_tool_calls(
+    async def _handle_tool_calls(
         self, 
         tool_calls: List[Dict[str, Any]]
     ) -> List[Dict[str, Any]]:
@@ -195,7 +235,7 @@ class AgentBase(abc.ABC):
         results = []
         for call in tool_calls:
             tool_name = call["function"]["name"]
-            arguments = self.parse_tool_arguments(call)
+            arguments = self._parse_tool_arguments(call)
             
             tool = self.tool_registry.get_tool(tool_name)
             if not tool:
@@ -225,7 +265,7 @@ class AgentBase(abc.ABC):
         
         return results
     
-    def parse_tool_arguments(
+    def _parse_tool_arguments(
         self, 
         call: Dict[str, Any]
     ) -> Dict[str, Any]:
@@ -235,7 +275,7 @@ class AgentBase(abc.ABC):
         except (json.JSONDecodeError, KeyError):
             return {}
     
-    def build_tool_message(
+    def _build_tool_message(
         self,
         tool_results: List[Dict[str, Any]],
         original_response: Dict[str, Any]

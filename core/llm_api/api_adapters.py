@@ -1,17 +1,9 @@
-import asyncio
+# core/llm_api/api_adapters.py
 from abc import ABC, abstractmethod
-from typing import Dict, List, Any, Optional, AsyncGenerator, Union
-from datetime import datetime
-import json
+from typing import Dict, List, Any, Optional
 from pprint import pprint
 
-# 导入所有需要的库
 import openai
-import google.generativeai as genai
-from google.generativeai.types import HarmCategory, HarmBlockThreshold
-from anthropic import AsyncAnthropic
-
-import httpx
 
 from ..config import get_api_config
 from ..utils.logger import get_logger
@@ -23,7 +15,7 @@ class BaseAPIAdapter(ABC):
     def __init__(self, provider: str, model: str, **kwargs):
         self.provider = provider
         self.model = model
-        self.config = get_api_config(provider)
+        self.api_config = get_api_config(provider)
         self.logger = get_logger(f"api.{provider}")
     
     @abstractmethod
@@ -47,9 +39,9 @@ class OpenAICompatibleAdapter(BaseAPIAdapter):
         super().__init__(provider, model, **kwargs)
         
         self.client = openai.AsyncOpenAI(
-            api_key=self.config.get("api_key"),
-            base_url=self.config.get("base_url"),
-            timeout=self.config.get("timeout", 60),
+            api_key=self.api_config.get("api_key"),
+            base_url=self.api_config.get("base_url"),
+            timeout=self.api_config.get("timeout", 60),
         )
     
     async def chat_completion(
@@ -68,6 +60,7 @@ class OpenAICompatibleAdapter(BaseAPIAdapter):
             "messages": messages,
             "temperature": temperature,
             "stream": False,
+            "response_format": {"type": "json_object"},
             **kwargs
         }
         
@@ -77,12 +70,6 @@ class OpenAICompatibleAdapter(BaseAPIAdapter):
         if tools:
             request_params["tools"] = tools
             request_params["tool_choice"] = tool_choice or "auto"
-        
-        self.logger.info(f"发送请求到{self.provider}", extra={
-            "model": self.model,
-            "message_count": len(messages),
-            "has_tools": bool(tools)
-        })
 
         if debug_mode:
             print(40 * "-", f"API请求参数 ({self.provider})", 40 * "-")

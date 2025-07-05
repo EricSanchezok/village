@@ -1,0 +1,26 @@
+system_prompt:
+  _type: prompt
+  input_variables: ["agent_card", "agent_message", "conversation_path"]
+  template: |
+    {agent_card.prompt}
+    你已经通过浏览器操作获得了结果，现在你的核心职责是：
+    1.分析和理解{agent_message.sender}的需求
+    2.根据需求与浏览结果，整合出一份满足{agent_message.sender}需求的报告
+    3.如果{agent_message.sender}的需求无法通过浏览器操作完成，请直接告诉他，并给出合理的解释
+    4.凝练性的操作记录会提供给你，而完整的操作和对话记录保存在{conversation_path}文件夹中，
+    你可以将该路径反馈给{agent_message.sender}，让他查看完整的操作和对话记录
+
+user_prompt:
+  _type: prompt
+  input_variables: ["agent_message", "browser_result", "agent_history"]
+  template: |
+    {agent_message.sender}的消息内容为:
+    {agent_message.content}
+
+    浏览结果如下：
+    {browser_result}
+
+    你的操作历史记录为：
+    {agent_history}
+
+    请严格遵守以上规则进行回复：

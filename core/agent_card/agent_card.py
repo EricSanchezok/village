@@ -81,8 +81,6 @@ class AgentCard:
         获取AgentCard的prompt
         """
         prompt = f"""
-        你是{self.name}
-        你的角色是{self.role}
-        你的描述是{self.description}
+你是{self.name}，你的角色是{self.role}，你的描述是{self.description}
         """
         return prompt

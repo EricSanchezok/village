@@ -13,6 +13,11 @@ from .tool.tool_base import ToolBase
 from .tool.tool_registry import ToolRegistry
 from .utils.logger import get_logger
 from .utils.exceptions import *
+from .config import get_api_config
+from .swarm.swarm import Swarm
+from .swarm.task import Task
+from .swarm.roster import Roster
+
 
 # 导出主要类
 __all__ = [
@@ -23,5 +28,9 @@ __all__ = [
     'create_api_adapter',
     'ToolBase',
     'ToolRegistry',
-    'get_logger'
+    'get_logger',
+    'get_api_config',
+    'Swarm',
+    'Task',
+    'Roster'
 ]

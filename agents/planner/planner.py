@@ -1,10 +1,10 @@
-from core import AgentBase
-from core import AgentMessage
+from core import AgentBase, AgentMessage, AgentCard, ToolRegistry, ToolBase
+from tools import ShellTool
 
-import json
 from typing import Dict, Any, List
+import json
 
-class Echoer(AgentBase):
+class Planner(AgentBase):
     def __init__(self):
         super().__init__(
             provider="deepseek",
@@ -12,6 +12,8 @@ class Echoer(AgentBase):
             temperature=0.7,
             max_tokens=8000
         )
+
+        # self.tool_registry.register(ShellTool())
 
     def _build_messages(self, agent_message: AgentMessage) -> List[Dict[str, Any]]:
         return [
@@ -41,3 +43,4 @@ class Echoer(AgentBase):
         )
 
         return new_agent_message
+    

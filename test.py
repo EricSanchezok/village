@@ -1,4 +1,4 @@
-from agents import Echoer
+from agents import Echoer, BrowserOperator
 from core import AgentMessage
 
 if __name__ == "__main__":

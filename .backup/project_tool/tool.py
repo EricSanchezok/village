@@ -3,7 +3,7 @@ import json
 import ast
 from pathlib import Path
 from typing import Optional, Dict, Any, List
-from core.tool import ToolBase
+from core import ToolBase 
 
 class ProjectTool(ToolBase):
     """
@@ -127,7 +127,7 @@ class ProjectTool(ToolBase):
     def _build_directory_tree(self, path: Path, ignore_patterns: Optional[List[str]], depth: int = 0) -> Dict[str, Any]:
         """递归构建目录树"""
         if self._is_ignored(path, ignore_patterns):
-            return None
+            return {}
         
         node = {
             "name": path.name,
@@ -354,7 +354,7 @@ class ProjectTool(ToolBase):
         
         return xml[start_idx+len(start_tag):end_idx].strip()
     
-    async def _search_code(self, project_path: Path, pattern: str, file_types: Optional[List[str]], ignore_patterns: Optional[List[str]]) -> Dict[str, Any]:
+    async def _search_code(self, project_path: Path, pattern: Optional[str], file_types: Optional[List[str]], ignore_patterns: Optional[List[str]]) -> Dict[str, Any]:
         """在项目中搜索代码模式"""
         if not pattern:
             raise ValueError("搜索模式不能为空")

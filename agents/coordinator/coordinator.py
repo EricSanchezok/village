@@ -1,40 +1,48 @@
 from core import AgentBase, AgentMessage, AgentCard, ToolRegistry, ToolBase
-from tools.file_tool.tool import FileTool
-from tools.project_tool.tool import ProjectTool
-from tools.shell_tool.tool import ShellTool
+from tools import ShellTool
 
-from typing import Dict, Any
+from typing import Dict, Any, List
+import json
 
 class Coordinator(AgentBase):
     def __init__(self):
         super().__init__(
             provider="deepseek",
             model="deepseek-chat",
-            temperature=0.0,
+            temperature=0.7,
             max_tokens=8000
         )
 
-        self.tool_registry.register(FileTool())
-        self.tool_registry.register(ProjectTool())
         self.tool_registry.register(ShellTool())
 
-    async def invoke(self, agent_message: AgentMessage, **kwargs) -> AgentMessage:
-        """
-        调用智能体的核心逻辑。
-        子类需要实现这个方法。
-        """
-        messages = self._build_messages(agent_message)
+    def _build_messages(self, agent_message: AgentMessage) -> List[Dict[str, Any]]:
+        return [
+            {"role": "system", "content": self.system_prompt.format(
+                agent_card=self.card,
+                format_prompt=self._format_prompt(agent_message)
+            )},
+            {"role": "user", "content": self.user_prompt.format(
+                agent_message=agent_message
+            )}
+        ]
 
-        response = await self.chat(
-            messages=messages,
-            **kwargs
+    async def invoke(self, message: AgentMessage, **kwargs) -> AgentMessage:
+        llm_messages = self._build_messages(message) 
+        response = await self.chat(messages=llm_messages, **kwargs)
+        final_response = await self.process_with_tools(response, llm_messages, **kwargs)
+
+        json_content = json.loads(final_response.get("content", ""))
+        receiver = json_content.get("receiver", None)
+        next_receiver = json_content.get("next_receiver", None)
+
+        new_agent_message = AgentMessage(
+            content=json_content.get("content", ""),
+            sender=str(self.card.name),
+            receiver=receiver,
+            next_receiver=next_receiver,
+            token_usage=response.get("usage", {}).get("total_tokens", 0),
+            task_id=message.task_id
         )
 
-        response = await self.process_with_tools(response, messages, **kwargs)
-
-        return AgentMessage(
-            sender=self.card.name or "coordinator",
-            receiver="user",
-            content=response.get("content", "")
-        )
+        return new_agent_message
     

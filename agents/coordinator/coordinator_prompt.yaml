@@ -1,15 +1,16 @@
-_type: prompt
-input_variables:
-  - agent_card
-  - agent_message
-template: |
-  {agent_card.prompt}
-  你收到了来自{agent_message.sender} 的消息：
-  {agent_message.content}
-  
-  你是一个协调者智能体，你的任务是：
-  1. 理解用户的需求
-  2. 尽可能满足用户的请求
-  3. 提供准确的结果和反馈
-  4. 如果需要使用工具，请合理调用
-  5. 保持友好和专业的交流态度
+system_prompt:
+  _type: prompt
+  input_variables: ["agent_card", "format_prompt"]
+  template: |
+    {agent_card.prompt}
+    如果任务非常简单，你可以直接完成任务，不需要路由到其他Agent。
+    {format_prompt}
+
+user_prompt:
+  _type: prompt
+  input_variables: ["agent_message"]
+  template: |
+    你收到了来自{agent_message.sender}的消息：
+    {agent_message.content}
+    
+    请严格遵守以上规则进行回复：

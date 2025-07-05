@@ -3,7 +3,7 @@ import os
 import platform
 from pathlib import Path
 from typing import Optional, Dict, Any
-from core.tool import ToolBase 
+from core import ToolBase
 
 # --- 第 1 部分：环境检测函数 ---
 # 你提供的环境检测函数，我们将直接使用它
@@ -144,7 +144,7 @@ class ShellTool(ToolBase):
     """
     def __init__(self, timeout: int = 60):
         self.shell_type = get_shell_from_env()
-        self._delegate: ToolBase = None 
+        self._delegate: Optional[ToolBase] = None
 
         if self.shell_type == "Bash":
             self._delegate = BashTool(timeout=timeout)
@@ -188,6 +188,9 @@ class ShellTool(ToolBase):
         异步执行一个 Shell 命令。
         这个方法会将调用直接转发给内部持有的具体工具实例 (BashTool 或 PowerShellTool)。
         """
+        if self._delegate is None:
+            return {"success": False, "error": "Shell工具未正确初始化"}
+        
         # 直接调用代理实例的 run 方法
         return await self._delegate.run(
             command=command,

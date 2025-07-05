@@ -6,11 +6,12 @@ from typing import Any, Dict, Optional, List, Union
 class AgentMessage:
     def __init__(
         self,
-        sender: str,
-        receiver: str,
         content: Union[str, Dict, List],
+        sender: Optional[str] = None,
+        receiver: Optional[str] = None,
         next_receiver: Optional[str] = None,
         task_id: Optional[str] = None,
+        token_usage: Optional[int] = 0,
         metadata: Optional[Dict[str, Any]] = None
     ):
         """
@@ -27,6 +28,7 @@ class AgentMessage:
         self.next_receiver = next_receiver
         self.content = content
         self.task_id = task_id
+        self.token_usage = token_usage
         self.metadata = metadata or {}
         self.timestamp = datetime.now().isoformat()  # 标准化时间格式
         self.message_id = str(uuid4())  # 生成唯一ID
@@ -60,4 +62,14 @@ class AgentMessage:
         return msg
     
     def __str__(self):
-        return f"{self.sender} 对 {self.receiver} 说：{self.content}"
+        return f"""
+发送方：{self.sender}
+接收方：{self.receiver}
+下一接收方：{self.next_receiver}
+内容：{self.content}
+任务ID：{self.task_id}
+token消耗：{self.token_usage}
+元数据：{self.metadata}
+时间戳：{self.timestamp}
+消息ID：{self.message_id}
+        """

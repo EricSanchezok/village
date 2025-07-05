@@ -6,7 +6,7 @@ import aiofiles
 import asyncio
 from pathlib import Path
 from typing import Optional, Dict, Any, Union, List, Tuple
-from core.tool import ToolBase
+from core import ToolBase
 from filelock import FileLock
 
 class FileTool(ToolBase):
@@ -196,7 +196,7 @@ class FileTool(ToolBase):
         
         return resolved
     
-    async def _read_file(self, file_path: str, encoding: str) -> Dict[str, Any]:
+    async def _read_file(self, file_path: Optional[str], encoding: str) -> Dict[str, Any]:
         """读取文件内容（支持大文件）"""
         if not file_path:
             raise ValueError("文件路径不能为空")
@@ -222,7 +222,7 @@ class FileTool(ToolBase):
             "encoding": encoding
         }
     
-    async def _write_file(self, file_path: str, content: str, encoding: str) -> Dict[str, Any]:
+    async def _write_file(self, file_path: Optional[str], content: Optional[str], encoding: str) -> Dict[str, Any]:
         """原子写入文件内容（覆盖）"""
         if not file_path:
             raise ValueError("文件路径不能为空")
@@ -256,7 +256,7 @@ class FileTool(ToolBase):
             "message": f"文件已安全写入: {resolved_path}"
         }
     
-    async def _append_file(self, file_path: str, content: str, encoding: str) -> Dict[str, Any]:
+    async def _append_file(self, file_path: Optional[str], content: Optional[str], encoding: str) -> Dict[str, Any]:
         """追加文件内容"""
         if not file_path:
             raise ValueError("文件路径不能为空")
@@ -283,7 +283,7 @@ class FileTool(ToolBase):
             "message": f"内容已安全追加到文件: {resolved_path}"
         }
     
-    async def _delete_file(self, file_path: str, recursive: bool = False) -> Dict[str, Any]:
+    async def _delete_file(self, file_path: Optional[str], recursive: bool = False) -> Dict[str, Any]:
         """删除文件或目录"""
         if not file_path:
             raise ValueError("文件路径不能为空")
@@ -324,7 +324,7 @@ class FileTool(ToolBase):
         else:
             raise ValueError(f"无法删除路径: {resolved_path}")
     
-    async def _list_directory(self, directory_path: str, recursive: bool) -> Dict[str, Any]:
+    async def _list_directory(self, directory_path: Optional[str], recursive: bool) -> Dict[str, Any]:
         """列出目录内容"""
         if not directory_path:
             raise ValueError("目录路径不能为空")
@@ -376,7 +376,7 @@ class FileTool(ToolBase):
             "total_count": len(items)
         }
     
-    async def _create_directory(self, directory_path: str) -> Dict[str, Any]:
+    async def _create_directory(self, directory_path: Optional[str]) -> Dict[str, Any]:
         """创建目录"""
         if not directory_path:
             raise ValueError("目录路径不能为空")
@@ -392,7 +392,7 @@ class FileTool(ToolBase):
             "message": f"目录已创建: {resolved_path}"
         }
     
-    async def _file_exists(self, file_path: str) -> Dict[str, Any]:
+    async def _file_exists(self, file_path: Optional[str]) -> Dict[str, Any]:
         """检查文件是否存在"""
         if not file_path:
             raise ValueError("文件路径不能为空")
@@ -408,7 +408,7 @@ class FileTool(ToolBase):
             "is_directory": resolved_path.is_dir() if resolved_path.exists() else None
         }
     
-    async def _get_file_info(self, file_path: str) -> Dict[str, Any]:
+    async def _get_file_info(self, file_path: Optional[str]) -> Dict[str, Any]:
         """获取文件信息"""
         if not file_path:
             raise ValueError("文件路径不能为空")
@@ -434,7 +434,7 @@ class FileTool(ToolBase):
             "permissions": oct(stat.st_mode)[-3:]
         }
     
-    async def _move_file(self, source_path: str, target_path: str) -> Dict[str, Any]:
+    async def _move_file(self, source_path: Optional[str], target_path: Optional[str]) -> Dict[str, Any]:
         """移动或重命名文件/目录"""
         if not source_path or not target_path:
             raise ValueError("源路径和目标路径不能为空")
@@ -458,7 +458,7 @@ class FileTool(ToolBase):
             "message": f"已移动: {source} -> {target}"
         }
     
-    async def _copy_file(self, source_path: str, target_path: str) -> Dict[str, Any]:
+    async def _copy_file(self, source_path: Optional[str], target_path: Optional[str]) -> Dict[str, Any]:
         """复制文件/目录"""
         if not source_path or not target_path:
             raise ValueError("源路径和目标路径不能为空")
@@ -487,7 +487,7 @@ class FileTool(ToolBase):
             "message": f"已复制: {source} -> {target}"
         }
     
-    async def _set_permissions(self, file_path: str, permissions: int) -> Dict[str, Any]:
+    async def _set_permissions(self, file_path: Optional[str], permissions: Optional[int]) -> Dict[str, Any]:
         """设置文件权限"""
         if not file_path:
             raise ValueError("文件路径不能为空")
@@ -512,7 +512,7 @@ class FileTool(ToolBase):
             "message": f"权限已设置为: {oct(permissions)}"
         }
     
-    async def _search_files(self, directory_path: str, pattern: str, recursive: bool) -> Dict[str, Any]:
+    async def _search_files(self, directory_path: Optional[str], pattern: Optional[str], recursive: bool) -> Dict[str, Any]:
         """搜索匹配模式的文件"""
         if not directory_path:
             raise ValueError("目录路径不能为空")
@@ -553,7 +553,7 @@ class FileTool(ToolBase):
             "count": len(results)
         }
     
-    async def _compress(self, source_path: str, archive_path: str) -> Dict[str, Any]:
+    async def _compress(self, source_path: Optional[str], archive_path: Optional[str]) -> Dict[str, Any]:
         """压缩文件或目录"""
         if not source_path or not archive_path:
             raise ValueError("源路径和压缩文件路径不能为空")
@@ -590,7 +590,7 @@ class FileTool(ToolBase):
             "message": f"已创建压缩文件: {archive}"
         }
     
-    async def _extract(self, archive_path: str, target_dir: str) -> Dict[str, Any]:
+    async def _extract(self, archive_path: Optional[str], target_dir: Optional[str]) -> Dict[str, Any]:
         """解压文件"""
         if not archive_path or not target_dir:
             raise ValueError("压缩文件路径和目标目录不能为空")
