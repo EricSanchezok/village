@@ -13,11 +13,11 @@ class Echoer(AgentBase):
             max_tokens=8000
         )
 
-    def _build_messages(self, agent_message: AgentMessage) -> List[Dict[str, Any]]:
+    def _build_llm_messages(self, agent_message: AgentMessage) -> List[Dict[str, Any]]:
         return [
             {"role": "system", "content": self.system_prompt.format(
                 agent_card=self.card,
-                format_prompt=self._format_prompt(agent_message)
+                format_prompt=self._add_routing_instructions(agent_message)
             )},
             {"role": "user", "content": self.user_prompt.format(
                 agent_message=agent_message
@@ -25,7 +25,7 @@ class Echoer(AgentBase):
         ]
 
     async def invoke(self, message: AgentMessage, **kwargs) -> AgentMessage:
-        response = await self.chat(messages=self._build_messages(message), **kwargs)
+        response = await self.chat(messages=self._build_llm_messages(message), **kwargs)
         
         json_content = json.loads(response.get("content", ""))
         receiver = json_content.get("receiver", None)

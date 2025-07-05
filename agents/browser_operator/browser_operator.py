@@ -45,7 +45,7 @@ class BrowserOperator(AgentBase):
         self.result_path.touch(exist_ok=True)
 
 
-    def _build_messages(self, agent_message: AgentMessage, agent_history: AgentHistoryList) -> List[Dict[str, Any]]:
+    def _build_llm_messages(self, agent_message: AgentMessage, agent_history: AgentHistoryList) -> List[Dict[str, Any]]:
         return [
             {"role": "system", "content": self.system_prompt.format(
                 agent_card=self.card,
@@ -90,7 +90,7 @@ class BrowserOperator(AgentBase):
         agent_history = await browser_agent.run()
 
         response = await self.chat(
-            messages=self._build_messages(agent_message, agent_history)
+            messages=self._build_llm_messages(agent_message, agent_history)
         )
 
         new_agent_message = AgentMessage(

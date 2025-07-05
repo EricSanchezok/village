@@ -35,6 +35,8 @@ class AgentCard:
             # 捕获并重新抛出YAML解析错误
             raise yaml.YAMLError(f"解析YAML文件 '{filepath}' 时出错: {e}")
 
+        self.prompt = self._build_prompt()
+
     def _load_and_set_attrs(self):
         """
         私有方法：打开并解析YAML文件，然后将内容递归地设置为类的属性。
@@ -75,10 +77,9 @@ class AgentCard:
         role = getattr(self, 'role', 'N/A')
         return f"AgentCard(name='{name}', role='{role}')"
 
-    @property
-    def prompt(self) -> str:
+    def _build_prompt(self) -> str:
         """
-        获取AgentCard的prompt
+        构建AgentCard的prompt
         """
         prompt = f"""
 你是{self.name}，你的角色是{self.role}，你的描述是{self.description}

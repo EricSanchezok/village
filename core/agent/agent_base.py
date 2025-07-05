@@ -155,7 +155,7 @@ class AgentBase(abc.ABC):
             **kwargs
         )
 
-    def _format_prompt(self, agent_message: AgentMessage) -> str:
+    def _add_routing_instructions(self, agent_message: AgentMessage) -> str:
         prompt = ""
         if self.task is None:
             return prompt
@@ -189,7 +189,7 @@ class AgentBase(abc.ABC):
         """
         return prompt
     
-    async def process_with_tools(
+    async def _execute_tool_calls_loop(
         self, 
         response: Dict[str, Any],  # 确保这是字典类型
         messages: List[Dict[str, Any]], 
@@ -202,10 +202,10 @@ class AgentBase(abc.ABC):
         iteration = 0
         
         while iteration <= self.max_function_calls and response.get("tool_calls"):
-            tool_results = await self._handle_tool_calls(response["tool_calls"])
+            tool_results = await self._execute_tool_calls(response["tool_calls"])
             
             # 获取工具消息列表
-            tool_messages = self._build_tool_message(tool_results, response)
+            tool_messages = self._build_tool_response_messages(tool_results, response)
             
             # 添加助手消息
             working_messages.append({
@@ -227,7 +227,7 @@ class AgentBase(abc.ABC):
             }
         return response
     
-    async def _handle_tool_calls(
+    async def _execute_tool_calls(
         self, 
         tool_calls: List[Dict[str, Any]]
     ) -> List[Dict[str, Any]]:
@@ -275,7 +275,7 @@ class AgentBase(abc.ABC):
         except (json.JSONDecodeError, KeyError):
             return {}
     
-    def _build_tool_message(
+    def _build_tool_response_messages(
         self,
         tool_results: List[Dict[str, Any]],
         original_response: Dict[str, Any]
