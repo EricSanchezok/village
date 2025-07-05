@@ -9,32 +9,32 @@ class Config(BaseSettings):
     """系统配置类"""
     
     # DeepSeek配置
-    deepseek_api_key: Optional[str] = Field(None, env="DEEPSEEK_API_KEY")
-    deepseek_base_url: str = Field("https://api.deepseek.com", env="DEEPSEEK_BASE_URL")
+    deepseek_api_key: Optional[str] = Field(env="DEEPSEEK_API_KEY")  # type: ignore
+    deepseek_base_url: str = Field(default="https://api.deepseek.com", env="DEEPSEEK_BASE_URL")  # type: ignore
     
     # 智谱AI配置
-    zhipu_api_key: Optional[str] = Field(None, env="ZHIPU_API_KEY")
-    zhipu_base_url: str = Field("https://open.bigmodel.cn/api/paas/v4", env="ZHIPU_BASE_URL")
+    zhipu_api_key: Optional[str] = Field(env="ZHIPU_API_KEY")  # type: ignore
+    zhipu_base_url: str = Field(default="https://open.bigmodel.cn/api/paas/v4", env="ZHIPU_BASE_URL")  # type: ignore
     
     # OpenAI配置
-    openai_api_key: Optional[str] = Field(None, env="OPENAI_API_KEY")
-    openai_base_url: str = Field("https://api.openai.com/v1", env="OPENAI_BASE_URL")
+    openai_api_key: Optional[str] = Field(env="OPENAI_API_KEY")  # type: ignore
+    openai_base_url: str = Field(default="https://api.openai.com/v1", env="OPENAI_BASE_URL")  # type: ignore
     
     # Google配置
-    google_api_key: Optional[str] = Field(None, env="GOOGLE_API_KEY")
+    google_api_key: Optional[str] = Field(env="GOOGLE_API_KEY")  # type: ignore
     
     # Anthropic配置
-    anthropic_api_key: Optional[str] = Field(None, env="ANTHROPIC_API_KEY")
+    anthropic_api_key: Optional[str] = Field(env="ANTHROPIC_API_KEY")  # type: ignore
 
     # 硅基流动配置
-    siliconflow_api_key: Optional[str] = Field(None, env="SILICONFLOW_API_KEY")
-    siliconflow_base_url: str = Field("https://api.siliconflow.cn/v1", env="SILICONFLOW_BASE_URL")
+    siliconflow_api_key: Optional[str] = Field(env="SILICONFLOW_API_KEY")  # type: ignore
+    siliconflow_base_url: str = Field(default="https://api.siliconflow.cn/v1", env="SILICONFLOW_BASE_URL")  # type: ignore
     
     # 系统配置
-    log_level: str = Field("INFO", env="LOG_LEVEL")
-    max_history_size: int = Field(1000, env="MAX_HISTORY_SIZE")
-    default_timeout: int = Field(30, env="DEFAULT_TIMEOUT")
-    browser_use_cloud_sync: bool = Field(False, env="BROWSER_USE_CLOUD_SYNC")
+    log_level: str = Field(default="INFO", env="LOG_LEVEL")  # type: ignore
+    max_history_size: int = Field(default=1000, env="MAX_HISTORY_SIZE")  # type: ignore
+    default_timeout: int = Field(default=30, env="DEFAULT_TIMEOUT")  # type: ignore
+    browser_use_cloud_sync: bool = Field(default=False, env="BROWSER_USE_CLOUD_SYNC")  # type: ignore
     
     class Config:
         env_file = ".env"
@@ -45,7 +45,7 @@ def load_config() -> Config:
     """加载配置"""
     # 加载.env文件
     load_dotenv()
-    return Config()
+    return Config()  # type: ignore
 
 
 def get_api_config(provider: str) -> Dict[str, Any]:
@@ -78,12 +78,6 @@ def get_api_config(provider: str) -> Dict[str, Any]:
     elif provider.lower() == "anthropic":
         return {
             "api_key": config.anthropic_api_key,
-            "timeout": config.default_timeout
-        }
-    elif provider.lower() == "siliconflow":
-        return {
-            "api_key": config.siliconflow_api_key,
-            "base_url": config.siliconflow_base_url,
             "timeout": config.default_timeout
         }
     else:

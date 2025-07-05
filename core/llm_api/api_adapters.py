@@ -135,7 +135,6 @@ def create_api_adapter(provider: str, model: str, **kwargs) -> BaseAPIAdapter:
     """创建API适配器工厂函数"""
     provider_lower = provider.lower()
     
-    # 更新工厂函数以包含 google
     if provider_lower in ["deepseek", "minimax", "openai", "zhipu"]:
         return OpenAICompatibleAdapter(provider, model, **kwargs)
     else:

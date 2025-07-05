@@ -1,4 +1,4 @@
-from .tool_base import ToolBase
+from core import ToolBase
 from typing import Dict, Any, Optional, List
 
 

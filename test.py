@@ -1,11 +1,11 @@
-from agents import EchoAgent, TestAgent, Bob
-from core.agent_message import AgentMessage
+from agents import Echoer
+from core import AgentMessage
 
 if __name__ == "__main__":
     import asyncio
     
     async def main():
-        agent = Bob()
+        agent = Echoer()
 
         # 创建一个消息对象
         agent_message = AgentMessage.from_dict({

@@ -1,15 +1,13 @@
-from core.agent import BaseAgent
-from core.agent_message import AgentMessage
-from core.agent_card import AgentCard
-from core.tool import ToolRegistry, ToolBase
-from tools import FileTool, ProjectTool, ShellTool
+from core import AgentBase, AgentMessage, AgentCard, ToolRegistry, ToolBase
+from tools.file_tool.tool import FileTool
+from tools.project_tool.tool import ProjectTool
+from tools.shell_tool.tool import ShellTool
 
 from typing import Dict, Any
 
-class Coordinator(BaseAgent):
+class Coordinator(AgentBase):
     def __init__(self):
         super().__init__(
-            card=AgentCard("agents/coordinator/coordinator_card.yaml"),
             provider="deepseek",
             model="deepseek-chat",
             temperature=0.0,
@@ -20,13 +18,6 @@ class Coordinator(BaseAgent):
         self.tool_registry.register(ProjectTool())
         self.tool_registry.register(ShellTool())
 
-    def _build_messages(self, message: AgentMessage) -> list[dict[str, Any]]:
-        system_prompt = "你是一个测试智能体，请你尽可能的满足用户的请求，请确保提供准确的结果和反馈。"
-        return [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": message.content}
-        ]
- 
     async def invoke(self, agent_message: AgentMessage, **kwargs) -> AgentMessage:
         """
         调用智能体的核心逻辑。
@@ -41,5 +32,9 @@ class Coordinator(BaseAgent):
 
         response = await self.process_with_tools(response, messages, **kwargs)
 
-        return response
+        return AgentMessage(
+            sender=self.card.name or "coordinator",
+            receiver="user",
+            content=response.get("content", "")
+        )
     
